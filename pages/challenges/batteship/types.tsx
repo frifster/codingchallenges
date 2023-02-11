@@ -4,3 +4,5 @@ type RowsData = {
     sum: number;
   };
 };
+
+type ShipSize = number;

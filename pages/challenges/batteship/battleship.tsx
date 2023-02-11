@@ -16,51 +16,71 @@ images = [
 ]
 ** source "https://www.codewars.com/kata/52bb6539a4cf1b12d90005b7/train/javascript";
  */
-function validateBattleField(field: BatteField): boolean {
-  // Given
-  // - 10 x 10 two dimension array
-
-  const rows: RowsData = {};
-
-  // check if the sum of all 1's is valid. should be 20
-  const sumOfAllCells = field.reduce((cellsSum, current, index) => {
-    const sumOfRow = current.reduce((sum, rowNum, innerIndex) => {
-      if (rowNum === 1) {
-        if (index === 0) {
-          if (innerIndex === 0) {
-            // if index = 0, and inner index = 0, check forward and down
-            // let foundAdjacent = false;
-            // let checkedIndex = index;
-          }
+function validateBattleField(field: BatteField) {
+  let shipCount = [0, 0, 0, 0];
+  for (let i = 0; i < 10; i++) {
+    for (let j = 0; j < 10; j++) {
+      if (field[i][j] === 1) {
+        let shipSize = checkShipSize(field, i, j);
+        if (
+          shipSize === -1 ||
+          shipSize > 4 ||
+          shipCount[shipSize - 1] >= 4 - shipSize + 1
+        ) {
+          return false;
         }
-        console.log({ index, innerIndex });
+        shipCount[shipSize - 1]++;
+        markShip(field, i, j, shipSize);
       }
-
-      return rowNum + sum;
-    }, 0);
-
-    rows[index] = { ...rows[index], sum: sumOfRow };
-
-    return sumOfRow + cellsSum;
-  }, 0);
-
-  const VALID_SUM_OF_ALL_CELLS = 20;
-
-  if (sumOfAllCells !== VALID_SUM_OF_ALL_CELLS) {
-    return false;
+    }
   }
+  return (
+    shipCount[0] === 4 &&
+    shipCount[1] === 3 &&
+    shipCount[2] === 2 &&
+    shipCount[3] === 1
+  );
+}
 
-  console.log(sumOfAllCells);
+function checkShipSize(field: BatteField, i: number, j: number): ShipSize {
+  let shipSize = 1;
+  let direction = 0;
+  if (j < 9 && field[i][j + 1] === 1) {
+    direction = 1;
+  } else if (i < 9 && field[i + 1][j] === 1) {
+    direction = 2;
+  } else {
+    return 1;
+  }
+  for (let k = 1; k < 4; k++) {
+    if (direction === 1) {
+      if (j + k >= 10 || field[i][j + k] !== 1) {
+        return -1;
+      }
+    } else {
+      if (i + k >= 10 || field[i + k][j] !== 1) {
+        return -1;
+      }
+    }
+    shipSize++;
+  }
+  return shipSize;
+}
 
-  // check for valid number of batteships
-  // one 4-cell straight line  - 4 cells
-  // two 3-cell straight line - 6 cells
-  // three 2-cell straight line - 6 cells
-  // four 1-cell - 4 cell
-
-  //
-
-  return true;
+function markShip(field: BatteField, i: number, j: number, shipSize: ShipSize) {
+  let direction = 0;
+  if (j < 9 && field[i][j + 1] === 1) {
+    direction = 1;
+  } else {
+    direction = 2;
+  }
+  for (let k = 0; k < shipSize; k++) {
+    if (direction === 1) {
+      field[i][j + k] = 2;
+    } else {
+      field[i + k][j] = 2;
+    }
+  }
 }
 
 const validField: BatteField = [
